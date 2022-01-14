@@ -3,6 +3,8 @@ Scaling yolov4 object detection using kubernetes
 
 ## Getting started
 
+- Download the pretrained `yolov4.weights` from the official [repository](https://github.com/AlexeyAB/darknet)
+
 - Build the Docker image
 
   `docker build -t image_name:version .`
@@ -17,7 +19,7 @@ Scaling yolov4 object detection using kubernetes
  
   `kubectl apply -f deployments/yolo.yaml -f deployments/expose-service.yaml`
   
- ## Testing
+## Testing
  
  - Check the service and deployment status using kubectl commands
  
@@ -29,7 +31,7 @@ Scaling yolov4 object detection using kubernetes
  
    ```
    curl -X 'POST' \
-    'http://ip-of-the-node/files/' \
+    'http://ip-of-the-node:31117/files/' \
     -H 'accept: application/json' \
     -H 'Content-Type: multipart/form-data' \
     -F 'file=@/path/to/img.jpg;type=image/jpeg'
@@ -38,3 +40,19 @@ Scaling yolov4 object detection using kubernetes
  - A sample response would look something like this
  
     `{"result":"{'person': 0.8518975, 'frisbee': 0.23659469, 'tennis racket': 0.24101968}"}`
+
+## Adding a nginx load balancer
+
+- On a different machine install nginx
+
+    `sudo apt install nginx`
+
+- Modify `loadbalancer/loadbalancer.conf` with the appropriate node ip addresses
+
+- Copy `loadbalancer/loadbalancer.conf` to `/etc/nginx/conf.d/loadbalancer.conf`
+
+- Restart nginx service 
+
+    `sudo systemctl restart nginx`
+    
+- Curl the api using the command mentioned earlier by using the ip of the load balancer 
