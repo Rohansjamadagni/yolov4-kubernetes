@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yolo-nodeport
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    app: yolo
+  ports:
+    - name: web-api
+      port: 8000
+      targetPort: web-api
+      nodePort: 31117
