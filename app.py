@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
+import pymongo
 import uvicorn
+import yaml
 from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
 
@@ -11,6 +13,13 @@ net.setInputSwapRB(True)
 
 with open("cfg/names.txt", "r") as f:
     names = [line.strip() for line in f.readlines()]
+with open("mongo-config/config.yaml", "r") as stream:
+    config = yaml.safe_load(stream)
+
+myclient = pymongo.MongoClient(config["app"]["mongo-uri"])
+mydb = myclient[config["app"]["db-name"]]
+mydb = myclient[config["app"]["db-name"]]
+mycol = mydb[config["app"]["col-name"]]
 
 # Creating FastAPI instance
 app = FastAPI()
@@ -39,8 +48,8 @@ async def create_file(file: bytes = File(...)):
         labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
         left, top, width, height = box
         top = max(top, labelSize[1])
+        result_string[names[classId]] = str(confidence)
 
-        result_string[names[classId]] = confidence
-
-    print(result_string)
-    return {"result": str(result_string)}
+    result = {"result": result_string}
+    x = mycol.insert_one(result)
+    return str(result)
